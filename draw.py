@@ -44,7 +44,7 @@ def movePoint(event):
 	w.coords(current, event.x-9, event.y-9, event.x+9, event.y+9)
 # Get points
 def getPoints():
-	return original, new
+	return list(map(getActualCoords, original)), list(map(getActualCoords, new))
 # Get picture
 def getPicture():
 	return numpy.asarray(rimg1)
