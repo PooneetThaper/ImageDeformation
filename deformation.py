@@ -11,7 +11,7 @@ def deform(img, p, q):
     #   - ret_img: numpy.array representation of deformed image with dimension (x, y, 3)
 
     points = create_grid_points(img.shape)
-    transformed_points = np.array([[transform(v,p,q) for v in row] for row in grid])
+    transformed_points = np.array([[transform(v,p,q) for v in row] for row in points])
 
     ret_img = np.zeros_like(img)
     for i in range(points.shape[0]-1):
