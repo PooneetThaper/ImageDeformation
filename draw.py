@@ -1,7 +1,8 @@
 import tkinter
 from PIL import ImageTk, Image
-import numpy
+import numpy as np
 import os
+import deformation
 
 # Listener callbacks
 def listenClick(event):
@@ -29,9 +30,11 @@ def listenDrag(event):
 				old_coords = w.coords(arrows[pt])
 				w.coords(arrows[pt], old_coords[0], old_coords[1], new_coords[0], new_coords[1])
 def listenRelease(event):
-	global current
+	global current, img2
 	print('Releasing', event.x, event.y)
 	current = None
+	img2 = arrayToPicture(deformation.deform(getPicture(rimg1), original, new))
+	w.create_image(width,0, image=img2, anchor="nw")
 
 # Create points
 def createPoint(event):
@@ -46,48 +49,53 @@ def movePoint(event):
 def getPoints():
 	return list(map(getActualCoords, original)), list(map(getActualCoords, new))
 # Get picture
-def getPicture():
-	return numpy.asarray(rimg1)
+def getPicture(pic):
+	return np.asarray(pic)
+def arrayToPicture(arr):
+	return Image.fromarray(np.uint8(arr))
 def getActualCoords(point):
 	coords = w.coords(point)
 	return coords[0]+9, coords[1]+9
+def main():
+	# Initialize window and canvas
+	top = tkinter.Tk()
+	w = tkinter.Canvas(top)
+	# Event Listeners
+	w.bind('<Button-1>', listenClick)
+	w.bind('<B1-Motion>', listenDrag)
+	w.bind('<ButtonRelease-1>', listenRelease)
 
-# Initialize window and canvas
-top = tkinter.Tk()
-w = tkinter.Canvas(top)
-# Event Listeners
-w.bind('<Button-1>', listenClick)
-w.bind('<B1-Motion>', listenDrag)
-w.bind('<ButtonRelease-1>', listenRelease)
+	# Open Image
+	rimg1 = Image.open("./dorabenny.jpg")
+	[width, height] = rimg1.size
 
-# Open Image
-rimg1 = Image.open("./dorabenny.jpg")
-[width, height] = rimg1.size
+	# Set window to twice width to fit two pictures
+	w.config(width=width*2, height=height)
+	img1 = ImageTk.PhotoImage(rimg1)
 
-# Set window to twice width to fit two pictures
-w.config(width=width*2, height=height)
-img1 = ImageTk.PhotoImage(rimg1)
+	# Figure out transformation matrix/calculations here
+	# a = 1
+	# b = 0.5
+	# c = 1
+	# d = 0
+	# e = 0.5
+	# f = 0
+	# rimg2 = rimg1.transform((width, height), Image.AFFINE, (a,b,c,d,e,f), Image.BICUBIC)
+	# img2 = ImageTk.PhotoImage(rimg2)
+	img2 = None
+	# Create images
+	w.create_image(0, 0, image=img1, anchor="nw")
+	w.create_image(width,0, image=img2, anchor="nw")
 
-# Figure out transformation matrix/calculations here
-a = 1
-b = 0.5
-c = 1
-d = 0
-e = 0.5
-f = 0
-rimg2 = rimg1.transform((width, height), Image.AFFINE, (a,b,c,d,e,f), Image.BICUBIC)
-img2 = ImageTk.PhotoImage(rimg2)
+	# Create points
+	current = None
+	new = []
+	original = []
+	arrows = []
 
-# Create images
-w.create_image(0, 0, image=img1, anchor="nw")
-w.create_image(width,0, image=img2, anchor="nw")
+	# w.pack(expand="yes", fill="both")
+	w.pack()
+	top.mainloop()
 
-# Create points
-current = None
-new = []
-original = []
-arrows = []
-
-# w.pack(expand="yes", fill="both")
-w.pack()
-top.mainloop()	
+if __name__ == '__main__':
+	main()
