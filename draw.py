@@ -2,11 +2,11 @@ import tkinter
 from PIL import ImageTk, Image
 import numpy as np
 import os
-import deformation
+# import deformation
 
 # Listener callbacks
 def listenClick(event):
-	global current
+	global w, current, new
 	print('Clicking', event.x, event.y)
 	for pt in new:
 		point = w.coords(pt)
@@ -17,7 +17,7 @@ def listenClick(event):
 	print('Creating point')
 	createPoint(event)
 def listenDrag(event):
-	global current
+	global w, current, new, original, arrows
 	print('Dragging', event.x, event.y)
 	print(current != None)
 	if current != None:
@@ -33,18 +33,41 @@ def listenRelease(event):
 	global current, img2
 	print('Releasing', event.x, event.y)
 	current = None
-	img2 = arrayToPicture(deformation.deform(getPicture(rimg1), original, new))
-	w.create_image(width,0, image=img2, anchor="nw")
-
+	# Deform picture
+	# img2 = arrayToPicture(deformation.deform(getPicture(rimg1), original, new))
+	# w.create_image(width,0, image=img2, anchor="nw")
+def listenHover(event):
+	updateMouseCoord(event)
 # Create points
 def createPoint(event):
-	original.append(w.create_oval(event.x-9, event.y-9, event.x+9, event.y+9, width=0, fill="#ff0000",activefill="#ff0000",disabledfill="#ff0000"))
-	new.append(w.create_oval(event.x-9, event.y-9, event.x+9, event.y+9, width=0, fill="#00ff00"))
-	arrow = w.create_line(event.x, event.y, event.x, event.y, width=2, arrow=tkinter.LAST)
+	global w, width, height, new, coord
+	if event.x < 0 or event.x > width or event.y < 0 or event.y > height:
+		w.itemconfigure(coord, text=w.itemcget(coord, 'text')+' Out of bounds')
+		return
+	x = event.x
+	y = event.y
+	original.append(w.create_oval(x-9, y-9, x+9, y+9, width=0, fill="#ff0000",activefill="#ff0000",disabledfill="#ff0000"))
+	new.append(w.create_oval(x-9, y-9, x+9, y+9, width=0, fill="#00ff00"))
+	arrow = w.create_line(x, y, x, y, width=2, arrow=tkinter.LAST)
 	arrows.append(arrow)
 # Move point
 def movePoint(event):
-	w.coords(current, event.x-9, event.y-9, event.x+9, event.y+9)
+	global width, height
+	if event.x < 0:
+		x = 0
+	elif event.x > width:
+		x = width
+	else:
+		x = event.x
+	if event.y < 0:
+		y = 0
+	elif event.y > height:
+		y = height
+	else:
+		y = event.y
+	error_msg = ' Out of bounds' if x != event.x or y != event.y else ''
+	w.coords(current, x-9, y-9, x+9, y+9)
+	w.itemconfigure(coord, text='%d, %d'%(event.x, event.y) + error_msg)
 # Get points
 def getPoints():
 	return list(map(getActualCoords, original)), list(map(getActualCoords, new))
@@ -56,7 +79,11 @@ def arrayToPicture(arr):
 def getActualCoords(point):
 	coords = w.coords(point)
 	return coords[0]+9, coords[1]+9
+def updateMouseCoord(event):
+	global w, coord
+	w.itemconfigure(coord, text='%d, %d'%(event.x, event.y))
 def main():
+	global w, width, height, new, original, arrows, coord
 	# Initialize window and canvas
 	top = tkinter.Tk()
 	w = tkinter.Canvas(top)
@@ -64,6 +91,7 @@ def main():
 	w.bind('<Button-1>', listenClick)
 	w.bind('<B1-Motion>', listenDrag)
 	w.bind('<ButtonRelease-1>', listenRelease)
+	w.bind('<Motion>', listenHover)
 
 	# Open Image
 	rimg1 = Image.open("./dorabenny.jpg")
@@ -85,6 +113,7 @@ def main():
 	img2 = None
 	# Create images
 	w.create_image(0, 0, image=img1, anchor="nw")
+	w.create_line(width, 0, width, height)
 	w.create_image(width,0, image=img2, anchor="nw")
 
 	# Create points
@@ -93,6 +122,9 @@ def main():
 	original = []
 	arrows = []
 
+	# Coordinate indicator
+	coord = w.create_text(10, height)
+	w.itemconfigure(coord, text='0 0', anchor="sw")
 	# w.pack(expand="yes", fill="both")
 	w.pack()
 	top.mainloop()
