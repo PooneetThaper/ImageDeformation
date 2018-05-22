@@ -1,3 +1,5 @@
+import numpy as np
+
 def pointInArray(p, arr):
     # Preconditions:
     # - p is a 1D numpy arroy of 2 coordinates.
