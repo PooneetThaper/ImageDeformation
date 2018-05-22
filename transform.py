@@ -1,34 +1,5 @@
 import numpy as np
-
-def pointInArray(p, arr):
-    # Preconditions:
-    # - p is a 1D numpy arroy of 2 coordinates.
-    # - arr is a 2D numpy array, such that each row is a point with 2
-    #   coordinates. Thus the shape should be (*, 2), where "*" is
-    #   some integer.
-    # Postconditions:
-    # - returns True if p is equal to one of the rows in arr. Returns
-    #   false otherwise.
-    equal_mask = (np.tile(p, (arr.shape[0], 1)) == arr)
-    point_equal_mask = equal_mask.sum(axis=1) == 2
-    return point_equal_mask.sum().astype(np.bool)
-
-def pointLocationInArray(p, arr):
-    # Preconditions:
-    # - p is a 1D numpy arroy of 2 coordinates.
-    # - arr is a 2D numpy array, such that each row is a point with 2
-    #   coordinates. Thus the shape should be (*, 2), where "*" is
-    #   some integer.
-    # Postconditions:
-    # - returns index, i,  of arr such that arr[i] == p, if such an i
-    #   exists. Returns -1 otherwise.
-    equal_mask = (np.tile(p, (arr.shape[0], 1)) == arr)
-    point_equal_mask = equal_mask.sum(axis=1) == 2
-    # np.where returns a tuple which contains an array.
-    location = np.where(point_equal_mask)[0]
-    return (location[0]
-            if location.size != 0
-            else -1)
+from utils import pointLocationInArray
 
 def get_weight(p, v, a): #p, v are row vectors [x y]
         # - p, v : 1D numpy arrays. Represent locations in an image.
