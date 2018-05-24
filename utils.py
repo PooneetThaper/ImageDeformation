@@ -59,3 +59,64 @@ def rotate_corners(left, top, right, bottom, degrees):
     ])
     return new
 
+def cartesian_product_points(x_points, y_points):
+    # Preconditions:
+    # - x_points, y_points are 1D numpy arrays that represent a set of
+    #   x coordinates and y coordinates respectively. For instance,
+    #   x_points = [0, 1], y_points = [2, 3]. This should result in
+    #   the set of all points [[0, 2], [0, 3], [1, 2], [1, 3]].
+    # Postconditions:
+    # - Returns a 2D numpy array of shape (points_in_box, 2) such that
+    #   each row is a point whose x coordinate was in x_points and y
+    #   coordinate was in y_points.
+    grid = np.meshgrid(x_points, y_points)
+    return [A.ravel() for A in grid]
+
+# Source: <https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html>
+def point_in_polygon(point, corners):
+    # Preconditions:
+    # - corners is a 2D numpy array of shape (numCorners, 2). Each
+    #   row should be an (x, y) coordinate in 2D space such that
+    #   corners[i-1], corners[i] forms an edge of the polygon.
+    numCorners = corners.shape[0]
+    min_x, min_y = corners.min(axis=0)
+    max_x, max_y = corners.max(axis=0)
+    if (any([point[0] < min_x, point[0] > max_x, point[1] < min_y,
+             point[1] > max_y])):
+        return False
+    inside = False
+    for i in range(numCorners):
+        start = corners[i - 1]
+        end = corners[i]
+        if (((end[1] > point[1]) != (start[1] > point[1])) and
+            (point[0] < 
+                ((start[0] - end[0]) * 
+                    (point[1] - end[1]) / 
+                    (start[1] - end[1]) + end[0]))):
+            inside = not inside
+    return inside
+
+def enumerate_points_in_polygon(corners):
+    # Preconditions:
+    # - corners is a 2D numpy array of shape (num_corners, 2). Each
+    #   row should be an (x, y) coordinate in 2D space such that
+    #   corners[i-1], corners[i] forms an edge of the polygon.
+    # Postconditions:
+    # - Returns a 2D numpy array of shape (points_found, 2), where
+    #   each row is a pixel location that is inside of the specified
+    #   polygon.
+    min_x, min_y = corners.min(axis=0)
+    max_x, max_y = corners.max(axis=0)
+    points = np.stack(
+            cartesian_product_points(
+                np.arange(min_x, max_x + 1),
+                np.arange(min_y, max_y + 1)),
+            axis=1).astype(np.int)
+    return np.array([p for p in points if point_in_polygon(p, corners)])
+
+
+
+colors = {
+    'red' : [0xa9, 0x3f, 0x55],
+    'white' : [255, 255, 255],
+}
