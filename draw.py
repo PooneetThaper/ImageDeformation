@@ -1,4 +1,5 @@
 import tkinter
+from tkinter import ttk
 from PIL import ImageTk, Image
 import numpy as np
 import os
@@ -6,7 +7,7 @@ from deformation import deform
 
 # Listener callbacks
 def listenClick(event):
-        global w, current, new
+        global w, current, new, deformButton
         print('Clicking', event.x, event.y)
         for pt in new:
                 point = w.coords(pt)
@@ -16,6 +17,8 @@ def listenClick(event):
                         return
         print('Creating point')
         createPoint(event)
+        if len(new) >0:
+            deformButton.config(state='normal', text='Deform')
 def listenDrag(event):
         global w, current, new, original, arrows
         print('Dragging', event.x, event.y)
@@ -95,10 +98,11 @@ def updateMouseCoord(event):
         global w, coord
         w.itemconfigure(coord, text='%d, %d'%(event.x, event.y))
 def main():
-        global w, width, height, new, original, arrows, coord, rimg1, img2, img2_canvas
+        global w, width, height, new, original, arrows, coord, rimg1, img2, img2_canvas, deformButton
         # Initialize window and canvas
         top = tkinter.Tk()
         w = tkinter.Canvas(top)
+        w.grid(row=0, column=0)
         # Event Listeners
         w.bind('<Button-1>', listenClick)
         w.bind('<B1-Motion>', listenDrag)
@@ -128,10 +132,13 @@ def main():
         w.create_line(width, 0, width, height)
         img2 = None
         img2_canvas = w.create_image(width,0, image=img2, anchor="nw")
+        f = tkinter.Frame(height=50)
+        deformButton = tkinter.Button(f,text="Need to add points", state='disabled', command=deformPicture)
+        # progressBar.grid(row=0, column=1)
+        # progressBar.grid_remove()
 
-        deformButton = tkinter.Button(text="deform", command=deformPicture)
-
-        w.create_window(width*2, 0, window=deformButton, anchor="nw")
+        
+        # w.create_window(width*2, 0, window=deformButton, anchor="nw")
 
         # Create points
         current = None
@@ -143,7 +150,11 @@ def main():
         coord = w.create_text(10, height)
         w.itemconfigure(coord, text='0 0', anchor="sw")
         # w.pack(expand="yes", fill="both")
-        w.pack()
+        top.geometry('{}x{}'.format(2*width, height+50))
+        # deformButton.pack()
+        deformButton.grid(row=0, column=0)
+        w.grid(row=1)
+        f.grid(row=0)
         top.mainloop()
 
 if __name__ == '__main__':
